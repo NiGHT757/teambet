@@ -1,0 +1,72 @@
+"Phrases"
+{
+	"Win"
+	{
+		"#format"		"{1:d}"
+		"en"			"[{darkred}TeamBet{default}] You won {green}${1}{default}."
+	}
+	
+	"Lost"
+	{
+		"#format"		"{1:d}"
+		"en"			"[{darkred}TeamBet{default}] You lost {darkred}${1}{default}."
+	}
+	
+	"Already bet"
+	{
+		"#format"		"{1:t},{2:d}"
+		"en"			"{darkred}ERROR:{default} You already bet, your bet: {1} {green}${2}{default}."
+	}
+	
+	"T"
+	{
+		"en"			"{darkred}T{default}"
+	}
+	
+	"CT"
+	{
+		"en"			"{blue}CT{default}"
+	}
+	
+	"Cannot bet"
+	{
+		"en"			"{darkred}ERROR:{default} You cannot bet right now."
+	}
+	
+	"Invalid team"
+	{
+		"en"			"{darkred}ERROR:{default} You need to be in a playable team to bet."
+	}
+	
+	"Player alive"
+	{
+		"en"			"{darkred}ERROR:{default} You need to be dead to bet."
+	}
+	
+	"No Players Alive"
+	{
+		"en"			"{darkred}ERROR:{default} No players alive found in your or enemy team."
+	}
+	
+	"Invalid Bet Team"
+	{
+		"en"			"{darkred}ERROR:{default} Invalid team, syntax example: {green}bet ct/t all/amount{default}."
+	}
+	
+	"Invalid Bet Amount"
+	{
+		"en"			"{darkred}ERROR:{default} Invalid amount, syntax example: {green}bet ct/t all/amount{default}."
+	}
+	
+	"Invalid Amount"
+	{
+		"#format"		"{1:d},{2:d}"
+		"en"			"{darkred}ERROR:{default} Invalid amount, minimum to bet: {green}{1}{default}, maximum: {darkred}{2}{default}."
+	}
+	
+	"Bet"
+	{
+		"#format"		"{1:t},{2:d}"
+		"en"			"[{darkred}TeamBet{default}] You bet {1} {green}${2}{default}."
+	}
+}
