@@ -1,4 +1,4 @@
-# SM-Parachute
+# TeamBets
 Updated & simplified version of [TeamBets (Mani Bet Module Conversion)](https://forums.alliedmods.net/showthread.php?t=56601?t=56601) 
 
 # Requirements:
