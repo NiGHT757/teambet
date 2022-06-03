@@ -4,5 +4,6 @@ Updated & simplified version of [TeamBets (Mani Bet Module Conversion)](https://
 # Requirements:
 [SourceMod](https://www.sourcemod.net/downloads.php?branch=stable) 1.10 or higher
 
+For plugin compilation: [Karyuu-Library](https://github.com/K4ryuu/Karyuu-Library)
 # Instalation
 Unpack and upload the files on the server
