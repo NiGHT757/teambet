@@ -2,8 +2,7 @@
 #pragma newdecls required;
 
 #include <sourcemod>
-#include <smlib>
-#include <kit_cp>
+#include <karyuu>
 
 #define BET_SUM 1
 #define BET_TEAM 2
@@ -25,7 +24,7 @@ public Plugin myinfo =
 	name = "TeamBet",
 	author = "ferret, NiGHT",
 	description = "Bet on Team to Win",
-	version = "0.4",
+	version = "0.6",
 	url = "https://github.com/NiGHT757/teambet"
 };
 
@@ -79,10 +78,10 @@ public void Event_RoundEnd(Event event, const char[] name, bool db)
 			{
 				amount = Client_GetMoney(i) + g_iPlayerBet[i][BET_SUM] > g_iMaxMoney ? g_iMaxMoney - Client_GetMoney(i) + g_iPlayerBet[i][BET_SUM] : Client_GetMoney(i) + g_iPlayerBet[i][BET_SUM];
 				CPrintToChat(i, "%T", "Win", i, amount - Client_GetMoney(i));
-				Client_SetMoney(i, amount);
+				Karyuu_SetClientMoney(i, amount);
 			}
 			else{
-				Client_SetMoney(i, Client_GetMoney(i) - g_iPlayerBet[i][BET_SUM]);
+				Karyuu_SetClientMoney(i, Client_GetMoney(i) - g_iPlayerBet[i][BET_SUM]);
 				CPrintToChat(i, "%T", "Lost", i, g_iPlayerBet[i][BET_SUM]);
 			}
 		}
@@ -204,4 +203,9 @@ stock bool HasTeamPlayersAlive(int team)
 			return true;
 	}
 	return false;
+}
+
+stock int Client_GetMoney(int client)
+{
+	return GetEntProp(client, Prop_Send, "m_iAccount");
 }
