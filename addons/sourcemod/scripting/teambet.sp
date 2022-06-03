@@ -3,7 +3,7 @@
 
 #include <sourcemod>
 #include <smlib>
-#include <multicolors>
+#include <kit_cp>
 
 #define BET_SUM 1
 #define BET_TEAM 2
@@ -108,7 +108,7 @@ public void OnClientDisconnect(int client)
 
 public void OnClientSayCommand_Post(int client, const char[] command, const char[] sArgs)
 {
-	if(!IsClientInGame(client))
+	if(!client || !IsClientInGame(client))
 		return;
 
 	if(!sArgs[2] || sArgs[0] == '!' || sArgs[0] == '/')
