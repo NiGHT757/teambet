@@ -2,7 +2,6 @@
 #pragma newdecls required;
 
 #include <sourcemod>
-#include <karyuu>
 
 #define BET_SUM 1
 #define BET_TEAM 2
@@ -24,7 +23,7 @@ public Plugin myinfo =
 	name = "TeamBet",
 	author = "ferret, NiGHT",
 	description = "Bet on Team to Win",
-	version = "0.6",
+	version = "0.7",
 	url = "https://github.com/NiGHT757/teambet"
 };
 
@@ -42,7 +41,6 @@ public void OnPluginStart()
 	g_cvMaxBet.AddChangeHook(OnSettingsChanged);
 	g_cvMinBet.AddChangeHook(OnSettingsChanged);
 
-	LoadTranslations("teambet.phrases");
 	AutoExecConfig(true, "teambet");
 }
 
@@ -65,24 +63,26 @@ public void OnSettingsChanged(ConVar convar, const char[] oldValue, const char[]
 
 public void Event_RoundEnd(Event event, const char[] name, bool db)
 {
-	int team_win = event.GetInt("winner");
-	if(team_win == 2 || team_win == 3)
+	int iWinner = event.GetInt("winner");
+	if(iWinner == 2 || iWinner == 3)
 	{
-		int amount;
+		int iAmount, iClientBalance;
 		for(int i = 1; i <= MaxClients; i++)
 		{
 			if(!IsClientInGame(i) || g_iPlayerBet[i][BET_TEAM] == 0)
 				continue;
 			
-			if(team_win == g_iPlayerBet[i][BET_TEAM])
+			iClientBalance = GetEntProp(i, Prop_Send, "m_iAccount");
+
+			if(iWinner == g_iPlayerBet[i][BET_TEAM])
 			{
-				amount = Client_GetMoney(i) + g_iPlayerBet[i][BET_SUM] > g_iMaxMoney ? g_iMaxMoney - Client_GetMoney(i) + g_iPlayerBet[i][BET_SUM] : Client_GetMoney(i) + g_iPlayerBet[i][BET_SUM];
-				CPrintToChat(i, "%T", "Win", i, amount - Client_GetMoney(i));
-				Karyuu_SetClientMoney(i, amount);
+				iAmount = iClientBalance + g_iPlayerBet[i][BET_SUM] > g_iMaxMoney ? g_iMaxMoney - iClientBalance + g_iPlayerBet[i][BET_SUM] : iClientBalance + g_iPlayerBet[i][BET_SUM];
+				PrintToChat(i, "[\x02TeamBet\x01] You won \x04$%d\x01.", iAmount - iClientBalance);
+				SetEntProp(i, Prop_Send, "m_iAccount", iAmount);
 			}
 			else{
-				Karyuu_SetClientMoney(i, Client_GetMoney(i) - g_iPlayerBet[i][BET_SUM]);
-				CPrintToChat(i, "%T", "Lost", i, g_iPlayerBet[i][BET_SUM]);
+				PrintToChat(i, "[\x02TeamBet\x01] You lost \x02$%d\x01.", g_iPlayerBet[i][BET_SUM]);
+				SetEntProp(i, Prop_Send, "m_iAccount", iClientBalance - g_iPlayerBet[i][BET_SUM]);
 			}
 		}
 	}
@@ -118,31 +118,31 @@ public void OnClientSayCommand_Post(int client, const char[] command, const char
 	{
 		if(g_iPlayerBet[client][BET_SUM] != 0 || g_iPlayerBet[client][BET_TEAM] != 0)
 		{
-			CPrintToChat(client, "%T", "Already bet", client, g_iPlayerBet[client][BET_TEAM] == 2 ? "T" : "CT", g_iPlayerBet[client][BET_SUM]);
+			PrintToChat(client, " \x02ERROR:\x01 You already bet, your bet: %s \x04$%d\x01.", g_iPlayerBet[client][BET_TEAM] == 2 ? "\x02T\x01" : "\x0BCT\x01", g_iPlayerBet[client][BET_SUM]);
 			return;
 		}
 
 		if(restrict)
 		{
-			CPrintToChat(client, "%T", "Cannot bet", client);
+			PrintToChat(client, " \x02ERROR:\x01 You cannot bet right now.");
 			return;
 		}
 
 		if(GetClientTeam(client) <= 1)
 		{
-			CPrintToChat(client, "%T", "Invalid team", client);
+			PrintToChat(client, " \x02ERROR:\x01 You need to be in a playable team to bet.");
 			return;
 		}
 
 		if(IsPlayerAlive(client))
 		{
-			CPrintToChat(client, "%T", "Player alive", client);
+			PrintToChat(client, " \x02ERROR:\x01 You need to be dead to bet.");
 			return;
 		}
 
 		if(!HasTeamPlayersAlive(2) || !HasTeamPlayersAlive(3))
 		{
-			CPrintToChat(client, "%T", "No Players Alive", client);
+			PrintToChat(client, " \x02ERROR:\x01 No players alive found in your or enemy team.");
 			return;
 		}
 
@@ -152,7 +152,7 @@ public void OnClientSayCommand_Post(int client, const char[] command, const char
 			case 'c': g_iPlayerBet[client][BET_TEAM] = 3;
 			default:
 			{
-				CPrintToChat(client, "%T", "Invalid Bet Team", client);
+				PrintToChat(client, " \x02ERROR:\x01 Invalid team, syntax example: \x04bet ct/t all/amount\x01.");
 				g_iPlayerBet[client][BET_SUM] = 0;
 				g_iPlayerBet[client][BET_TEAM] = 0;
 
@@ -161,7 +161,7 @@ public void OnClientSayCommand_Post(int client, const char[] command, const char
 		}
 		if(!sExploded[2][0])
 		{
-			CPrintToChat(client, "%T", "Invalid Bet Amount", client);
+			PrintToChat(client, " \x02ERROR:\x01 Invalid amount, syntax example: \x04bet ct/t all/amount\x01.");
 			g_iPlayerBet[client][BET_SUM] = 0;
 			g_iPlayerBet[client][BET_TEAM] = 0;
 
@@ -169,25 +169,25 @@ public void OnClientSayCommand_Post(int client, const char[] command, const char
 		}
 		if(strcmp(sExploded[2], "all", false) == 0)
 		{
-			int iValue = Client_GetMoney(client);
+			int iValue = GetEntProp(client, Prop_Send, "m_iAccount");
 			if(iValue > g_iMaxBet)
 				g_iPlayerBet[client][BET_SUM] = g_iMaxBet;
 			else
-				g_iPlayerBet[client][BET_SUM] = Client_GetMoney(client);
+				g_iPlayerBet[client][BET_SUM] = iValue;
 		}
 		else
 		{
 			int iValue = StringToInt(sExploded[2]);
-			if(iValue < g_iMinBet || iValue > g_iMaxBet || Client_GetMoney(client) < iValue)
+			if(iValue < g_iMinBet || iValue > g_iMaxBet || GetEntProp(client, Prop_Send, "m_iAccount") < iValue)
 			{
-				CPrintToChat(client, "%T", "Invalid Amount", client, g_iMinBet, g_iMaxBet);
+				PrintToChat(client, " \x02ERROR:\x01 Invalid amount, minimum to bet: \x04%d\x01, maximum: \x02%d\x01.", g_iMinBet, g_iMaxBet);
 				g_iPlayerBet[client][BET_SUM] = 0;
 				g_iPlayerBet[client][BET_TEAM] = 0;
 				return;
 			}
 			g_iPlayerBet[client][BET_SUM] = iValue;
 		}
-		CPrintToChat(client, "%T", "Bet", client, g_iPlayerBet[client][BET_TEAM] == 2 ? "T" : "CT", g_iPlayerBet[client][BET_SUM]);
+		PrintToChat(client, "[\x02TeamBet\x01] You bet %s \x04$%d\x01.", g_iPlayerBet[client][BET_TEAM] == 2 ? "\x02T\x01" : "\x0BCT\x01", g_iPlayerBet[client][BET_SUM]);
 	}
 	return;
 }
@@ -203,9 +203,4 @@ stock bool HasTeamPlayersAlive(int team)
 			return true;
 	}
 	return false;
-}
-
-stock int Client_GetMoney(int client)
-{
-	return GetEntProp(client, Prop_Send, "m_iAccount");
 }
